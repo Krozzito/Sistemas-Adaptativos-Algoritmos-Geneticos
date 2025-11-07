@@ -46,7 +46,14 @@ void AlgoritmoGenetico::ejecutar(const ParametrosGA& params) {
 
     // Inicio del algoritmo
     auto start_time = Clock::now();
-    mt19937 gen(random_device{}());
+    
+    // Configuración del generador aleatorio con seed configurable
+    mt19937 gen;
+    if (params.seed >= 0) {
+        gen.seed(params.seed);  // Seed fija (reproducible)
+    } else {
+        gen.seed(random_device{}());  // Seed aleatoria (no reproducible)
+    }
 
     // Crear población inicial
     vector<Individuo> poblacion;

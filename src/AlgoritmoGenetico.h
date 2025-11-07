@@ -18,6 +18,7 @@ struct ParametrosGA {
     double p_mut;
     int k_greedy;
     double seeding_rate;
+    int seed;  // -1 = aleatorio, >= 0 = fija
 
     // Valores por defecto
     ParametrosGA() 
@@ -27,7 +28,8 @@ struct ParametrosGA {
           p_cruce(0.9),
           p_mut(0.01),
           k_greedy(10),
-          seeding_rate(0.2) {}
+          seeding_rate(0.2),
+          seed(-1) {}
 };
 
 /**

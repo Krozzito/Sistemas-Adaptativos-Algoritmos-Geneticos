@@ -14,6 +14,7 @@ void mostrarUso() {
     cout << "  --p_mut <P>         Probabilidad de mutación (default: 0.01)" << endl;
     cout << "  --k_greedy <K>      Parámetro greedy (default: 10)" << endl;
     cout << "  --seeding_rate <R>  Proporción de seeding (default: 0.2)" << endl;
+    cout << "  --seed <S>          Seed aleatoria (default: -1 = aleatorio)" << endl;
 }
 
 int main(int argc, char** argv) {
@@ -37,6 +38,8 @@ int main(int argc, char** argv) {
             params.k_greedy = stoi(argv[++i]);
         } else if (arg == "--seeding_rate" && i + 1 < argc) {
             params.seeding_rate = stod(argv[++i]);
+        } else if (arg == "--seed" && i + 1 < argc) {
+            params.seed = stoi(argv[++i]);
         } else if (arg == "--help" || arg == "-h") {
             mostrarUso();
             return 0;
