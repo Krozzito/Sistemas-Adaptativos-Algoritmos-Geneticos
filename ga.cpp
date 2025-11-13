@@ -11,6 +11,9 @@
 #include <cmath>
 #include <numeric> // Para std::iota
 
+using namespace std;
+using Clock = chrono::high_resolution_clock;
+
 // --- ESTRUCTURA DEL INDIVIDUO ---
 // Usaremos un cromosoma binario (vector<bool>)
 // cromosoma[i] = true  -> el nodo i ESTÁ en la solución
@@ -23,9 +26,6 @@ struct Individuo {
     // Constructor
     Individuo(int n) : cromosoma(n), fitness(0) {}
 };
-
-using namespace std;
-using Clock = chrono::high_resolution_clock;
 
 // Funciones de la Heurística Greedy (Seeding)
 vector<int> generarSolucionGreedy(const vector<vector<int>>& adj, const vector<unordered_set<int>>& adj_set, int k, mt19937& gen);
@@ -41,7 +41,7 @@ Individuo obtenerMejor(const vector<Individuo>& poblacion);
 
 void geneticAlgorithm(const string& instancia, double max_time, int pop_size, 
                       double p_cruce, double p_mut, 
-                      int k_greedy, double seeding_rate) { 
+                      int k_greedy, double seeding_rate, int seed = -1) { 
     
     // --- Carga del grafo (MODIFICADO para cargar adj y adj_set) ---
     ifstream in(instancia);
@@ -70,7 +70,14 @@ void geneticAlgorithm(const string& instancia, double max_time, int pop_size,
 
     // --- Inicio del Algoritmo ---
     auto start_time = Clock::now();
-    mt19937 gen(random_device{}());
+    
+    // Configuración del generador aleatorio con seed configurable
+    mt19937 gen;
+    if (seed >= 0) {
+        gen.seed(seed);  // Seed fija (reproducible)
+    } else {
+        gen.seed(random_device{}());  // Seed aleatoria (no reproducible)
+    }
 
     // 1. Crear Población Inicial
     vector<Individuo> poblacion;
@@ -83,11 +90,9 @@ void geneticAlgorithm(const string& instancia, double max_time, int pop_size,
 
     // 2. Encontrar la mejor solución inicial
     Individuo mejor_solucion_global = obtenerMejor(poblacion);
-    auto time_found = Clock::now();
-    double elapsed_found = chrono::duration<double>(time_found - start_time).count();
-
-    // 3. Imprimir primera solución (Requisito Any-Time)
-    cout << "Calidad: " << mejor_solucion_global.fitness << ", Tiempo: " << fixed << setprecision(4) << elapsed_found << "s" << endl;
+    
+    // 3. Primera solución (comentado para output limpio)
+    // cout << "Calidad: " << mejor_solucion_global.fitness << ", Tiempo: " << fixed << setprecision(4) << elapsed_found << "s" << endl;
     
     // --- Bucle principal del GA---
     while (true) {
@@ -122,20 +127,18 @@ void geneticAlgorithm(const string& instancia, double max_time, int pop_size,
         // Reemplazo generacional
         poblacion = nueva_poblacion;
 
-        // --- REPORTE ANY-TIME (Tu lógica - ¡Perfecta!) ---
+        // --- REPORTE ANY-TIME (comentado para output limpio) ---
         Individuo mejor_generacion = obtenerMejor(poblacion);
         if (mejor_generacion.fitness > mejor_solucion_global.fitness) {
             mejor_solucion_global = mejor_generacion;
-            time_found = Clock::now();
-            elapsed_found = chrono::duration<double>(time_found - start_time).count();
             
-            // Salida estándar obligatoria
-            cout << "Calidad: " << mejor_solucion_global.fitness << ", Tiempo: " << fixed << setprecision(4) << elapsed_found << "s" << endl;
+            // Salida comentada (anytime reporting desactivado)
+            // cout << "Calidad: " << mejor_solucion_global.fitness << ", Tiempo: " << fixed << setprecision(4) << elapsed_found << "s" << endl;
         }
     }
     
-    // --- Reporte Final (Tu lógica - ¡Perfecta!) ---
-    cout << "Final: " << mejor_solucion_global.fitness << ", Tiempo: " << fixed << setprecision(4) << elapsed_found << "s" << endl;
+    // --- Reporte Final: SOLO el número ---
+    cout << mejor_solucion_global.fitness << endl;
 }
 
 vector<int> generarSolucionGreedy(const vector<vector<int>>& adj, const vector<unordered_set<int>>& adj_set, int k, mt19937& gen) {
@@ -349,6 +352,7 @@ int main(int argc, char** argv) {
     // Parámetros nuevos para el "seeding"
     int k_greedy = 10;           // (Valor de tu SA)
     double seeding_rate = 0.2;   // (20% de la población será "greedy")
+    int seed = -1;               // -1 = aleatorio, >= 0 = fija
 
     // Lectura de argumentos (AÑADIR los nuevos)
     for (int i = 1; i < argc; ++i) {
@@ -362,6 +366,8 @@ int main(int argc, char** argv) {
         // Parámetros nuevos para irace
         else if (arg == "--k_greedy" && i + 1 < argc) k_greedy = stoi(argv[++i]);
         else if (arg == "--seeding_rate" && i + 1 < argc) seeding_rate = stod(argv[++i]);
+        // Parámetro de seed
+        else if (arg == "--seed" && i + 1 < argc) seed = stoi(argv[++i]);
     }
 
     if (instancia.empty()) {
@@ -371,7 +377,7 @@ int main(int argc, char** argv) {
     }
 
     // Llamada MODIFICADA a geneticAlgorithm
-    geneticAlgorithm(instancia, max_time, pop_size, p_cruce, p_mut, k_greedy, seeding_rate);
+    geneticAlgorithm(instancia, max_time, pop_size, p_cruce, p_mut, k_greedy, seeding_rate, seed);
 
     return 0;
 }
