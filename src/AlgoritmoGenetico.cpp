@@ -24,7 +24,7 @@ void AlgoritmoGenetico::inicializarPoblacion(
 
     // Crear individuos greedy
     for (int i = 0; i < n_greedy; ++i) {
-        poblacion[i] = Greedy::crearIndividuo(grafo.adj, k_greedy, gen);
+        poblacion[i] = Greedy::crearIndividuo(grafo.adj, grafo.adj_set, k_greedy, gen);
     }
 
     // Crear individuos aleatorios
@@ -33,7 +33,7 @@ void AlgoritmoGenetico::inicializarPoblacion(
         for (int j = 0; j < n; ++j) {
             poblacion[i].cromosoma[j] = (dis_bit(gen) == 1);
         }
-        Operadores::reparar_y_evaluar(poblacion[i], grafo.adj);
+        Operadores::reparar_y_evaluar(poblacion[i], grafo.adj_set);
     }
 }
 
@@ -65,14 +65,12 @@ void AlgoritmoGenetico::ejecutar(const ParametrosGA& params) {
 
     // Encontrar la mejor solución inicial
     Individuo mejor_solucion_global = Operadores::obtenerMejor(poblacion);
-    
-    // Primera solución (comentado para output limpio)
-    auto init_end_time = Clock::now();
-    double elapsed_init = chrono::duration<double>(init_end_time - start_time).count();
+    auto time_found = Clock::now();
+    double elapsed_found = chrono::duration<double>(time_found - start_time).count();
 
-    // Primera solución (ahora usa la variable correcta 'elapsed_init')
-    cout << "Calidad Solucion inicial: " << mejor_solucion_global.fitness 
-         << ", Tiempo: " << fixed << setprecision(4) << elapsed_init << "s" << endl;
+    // Imprimir primera solución
+    cout << "Calidad: " << mejor_solucion_global.fitness 
+         << ", Tiempo: " << fixed << setprecision(4) << elapsed_found << "s" << endl;
     
     // Bucle principal del GA
     while (true) {
@@ -82,7 +80,6 @@ void AlgoritmoGenetico::ejecutar(const ParametrosGA& params) {
 
         // Lógica de una generación
         vector<Individuo> nueva_poblacion;
-        nueva_poblacion.reserve(params.pop_size);
         while (nueva_poblacion.size() < static_cast<size_t>(params.pop_size)) {
             // Selección
             Individuo padre1 = Operadores::seleccionPorTorneo(poblacion, gen);
@@ -97,8 +94,8 @@ void AlgoritmoGenetico::ejecutar(const ParametrosGA& params) {
             Operadores::mutacionBitFlip(hijos.second, params.p_mut, gen);
 
             // Evaluación
-            Operadores::reparar_y_evaluar(hijos.first, grafo.adj);
-            Operadores::reparar_y_evaluar(hijos.second, grafo.adj);
+            Operadores::reparar_y_evaluar(hijos.first, grafo.adj_set);
+            Operadores::reparar_y_evaluar(hijos.second, grafo.adj_set);
 
             nueva_poblacion.push_back(hijos.first);
             if (nueva_poblacion.size() < static_cast<size_t>(params.pop_size)) {
@@ -107,23 +104,21 @@ void AlgoritmoGenetico::ejecutar(const ParametrosGA& params) {
         }
         
         // Reemplazo generacional
-        std::swap(poblacion, nueva_poblacion);
-        nueva_poblacion.clear();
+        poblacion = nueva_poblacion;
 
-        // Reporte any-time (comentado para output limpio)
+        // Reporte any-time
         Individuo mejor_generacion = Operadores::obtenerMejor(poblacion);
         if (mejor_generacion.fitness > mejor_solucion_global.fitness) {
             mejor_solucion_global = mejor_generacion;
+            time_found = Clock::now();
+            elapsed_found = chrono::duration<double>(time_found - start_time).count();
             
-             cout << "Calidad: " << mejor_solucion_global.fitness;
-             cout << ", Tiempo: " << fixed << setprecision(4) << elapsed_total << endl;
+            cout << "Calidad: " << mejor_solucion_global.fitness 
+                 << ", Tiempo: " << fixed << setprecision(4) << elapsed_found << "s" << endl;
         }
     }
     
-   // Reporte final: CON calidad y tiempo
-    auto final_time = Clock::now();
-    double final_elapsed = chrono::duration<double>(final_time - start_time).count();
-
-    cout << "Calidad: " << mejor_solucion_global.fitness;
-    cout << ", Tiempo: " << fixed << setprecision(4) << final_elapsed << "s" << endl;
+    // Reporte final
+    cout << "Final: " << mejor_solucion_global.fitness 
+         << ", Tiempo: " << fixed << setprecision(4) << elapsed_found << "s" << endl;
 }
