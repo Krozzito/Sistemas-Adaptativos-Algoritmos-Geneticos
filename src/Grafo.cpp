@@ -13,7 +13,7 @@ bool Grafo::cargarDesdeArchivo(const std::string& filename) {
     in >> n;
     
     adj.resize(n);
-    adj_set.resize(n);
+    std::vector<std::unordered_set<int>> adj_set(n);
     
     int u, v;
     while (in >> u >> v) {

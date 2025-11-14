@@ -12,8 +12,7 @@ class Grafo {
 public:
     int n; // Número de nodos
     std::vector<std::vector<int>> adj;           // Lista de adyacencia
-    std::vector<std::unordered_set<int>> adj_set; // Set de adyacencia (búsqueda O(1))
-
+    
     /**
      * @brief Carga un grafo desde un archivo
      * @param filename Ruta al archivo del grafo

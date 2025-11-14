@@ -3,13 +3,22 @@
 
 std::vector<int> Greedy::generarSolucion(
     const std::vector<std::vector<int>>& adj,
-    const std::vector<std::unordered_set<int>>& adj_set,
     int k,
     std::mt19937& gen
 ) {
     int n = adj.size();
     if (n == 0) return {};
     
+    // --- NUEVO: Crear una matriz de adyacencia local ---
+    // Esto nos da búsquedas O(1) sin necesitar el adj_set permanente
+    std::vector<std::vector<char>> adj_matrix(n, std::vector<char>(n, 0));
+    for (int u = 0; u < n; ++u) {
+        for (int v : adj[u]) {
+            adj_matrix[u][v] = 1;
+        }
+    }
+    // --- FIN NUEVO ---
+
     std::vector<int> curr_deg(n);
     for (int i = 0; i < n; ++i) curr_deg[i] = adj[i].size();
     
@@ -25,7 +34,10 @@ std::vector<int> Greedy::generarSolucion(
             candidates.push_back({(double)curr_deg[a], {a}});
             
             for (int b = a + 1; b < n; ++b) {
-                if (removed[b] || adj_set[a].count(b)) continue;
+                // --- CAMBIO CLAVE ---
+                // Usamos la matriz O(1) en lugar del set
+                if (removed[b] || adj_matrix[a][b]) continue;
+                // --- FIN CAMBIO ---
                 candidates.push_back({(double)(curr_deg[a] + curr_deg[b]) / 2.0, {a, b}});
             }
         }
@@ -76,13 +88,13 @@ std::vector<int> Greedy::generarSolucion(
 
 Individuo Greedy::crearIndividuo(
     const std::vector<std::vector<int>>& adj,
-    const std::vector<std::unordered_set<int>>& adj_set,
     int k,
     std::mt19937& gen
 ) {
     int n = adj.size();
     
-    std::vector<int> independent_set = generarSolucion(adj, adj_set, k, gen);
+    // La llamada ahora solo pasa 'adj'
+    std::vector<int> independent_set = generarSolucion(adj, k, gen);
     
     Individuo ind(n);
     for (int nodo : independent_set) {

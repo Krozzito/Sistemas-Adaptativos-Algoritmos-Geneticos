@@ -2,7 +2,7 @@
 
 void Operadores::reparar_y_evaluar(
     Individuo& ind,
-    const std::vector<std::unordered_set<int>>& adj_set
+    const std::vector<std::vector<int>>& adj_set
 ) {
     int n = ind.cromosoma.size();
     int fitness_calculado = 0;

@@ -21,7 +21,6 @@ public:
      */
     static std::vector<int> generarSolucion(
         const std::vector<std::vector<int>>& adj,
-        const std::vector<std::unordered_set<int>>& adj_set,
         int k,
         std::mt19937& gen
     );
@@ -36,7 +35,6 @@ public:
      */
     static Individuo crearIndividuo(
         const std::vector<std::vector<int>>& adj,
-        const std::vector<std::unordered_set<int>>& adj_set,
         int k,
         std::mt19937& gen
     );
